@@ -1,0 +1,2169 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111210">
+  <title>QuebraCode — laboratório de lógica</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111210;
+      --panel: #191a17;
+      --panel-raised: #20211d;
+      --line: #30312b;
+      --text: #f0f0e9;
+      --muted: #92938a;
+      --lime: #c7f36b;
+      --lime-dark: #8eaf45;
+      --orange: #ffad70;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 76% 5%, rgba(199, 243, 107, .055), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, a:focus-visible {
+      outline: 2px solid var(--lime);
+      outline-offset: 3px;
+    }
+    .app-shell { display: flex; min-height: 100vh; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 2;
+      display: flex;
+      width: 236px;
+      flex-direction: column;
+      padding: 27px 17px 18px;
+      border-right: 1px solid var(--line);
+      background: rgba(17, 18, 16, .93);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 0 9px;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 750;
+      letter-spacing: -.5px;
+      text-decoration: none;
+    }
+    .brand-mark {
+      display: grid;
+      width: 31px;
+      height: 31px;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--lime);
+      color: #161910;
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .brand span:last-child { color: var(--lime); }
+    .side-label {
+      margin: 42px 10px 12px;
+      color: #74756d;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+    .nav-list { display: grid; gap: 5px; }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 12px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: #a4a59c;
+      font-size: 13px;
+      text-decoration: none;
+      transition: background .18s, color .18s;
+    }
+    .nav-link:hover { background: var(--panel); color: var(--text); }
+    .nav-link.active {
+      border-color: #343a29;
+      background: #22261d;
+      color: var(--lime);
+    }
+    [hidden] { display: none !important; }
+    .nav-icon { width: 17px; color: inherit; font-family: var(--mono); text-align: center; }
+    .side-bottom { margin-top: auto; }
+    .safe-note {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #171814;
+    }
+    .safe-note-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+      color: #d8e6bd;
+      font-size: 11px;
+      font-weight: 650;
+    }
+    .safe-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lime); }
+    .safe-note p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 17px 5px 0;
+      padding-top: 15px;
+      border-top: 1px solid var(--line);
+    }
+    .avatar {
+      display: grid;
+      width: 31px;
+      height: 31px;
+      place-items: center;
+      border-radius: 50%;
+      background: #30342a;
+      color: var(--lime);
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+    .profile-name { font-size: 11px; font-weight: 600; }
+    .profile-level { margin-top: 3px; color: var(--muted); font-size: 10px; }
+
+    main { width: calc(100% - 236px); max-width: 1500px; margin-left: 236px; padding: 0 46px 54px; }
+    .topbar {
+      display: flex;
+      height: 77px;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+    .breadcrumb { color: var(--muted); font-size: 11px; }
+    .breadcrumb strong { color: #d7d8cf; font-weight: 550; }
+    .top-right { display: flex; align-items: center; gap: 18px; }
+    .streak { color: #c8c9c0; font-size: 11px; }
+    .streak b { color: var(--orange); font-family: var(--mono); font-weight: 600; }
+    .top-divider { width: 1px; height: 20px; background: var(--line); }
+    .level-pill {
+      padding: 6px 9px;
+      border: 1px solid #3c402f;
+      border-radius: 5px;
+      color: var(--lime);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+    .page-content { max-width: 1080px; margin: 0 auto; }
+    .intro { padding: 38px 0 27px; }
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--lime);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+    .eyebrow-line { width: 18px; height: 1px; background: var(--lime-dark); }
+    h1 { margin: 13px 0 8px; font-size: clamp(28px, 3vw, 37px); font-weight: 650; letter-spacing: -1.5px; }
+    .intro p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .stage-picker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin: 0 0 20px; }
+    .stage-option {
+      padding: 12px 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #171815;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: border-color .16s, background .16s;
+    }
+    .stage-option:hover { border-color: #555b43; }
+    .stage-option.active { border-color: #647844; background: #20241a; }
+    .stage-option:disabled { cursor: not-allowed; opacity: .5; }
+    .stage-option-title { display: block; font-size: 11px; font-weight: 650; }
+    .stage-option-meta { display: block; margin-top: 5px; color: var(--muted); font-family: var(--mono); font-size: 9px; }
+    .stage-option.active .stage-option-title { color: var(--lime); }
+    .link-view { padding: 22px; }
+    .link-view h2 { margin: 0 0 8px; font-size: 16px; }
+    .link-view > p { margin: 0 0 18px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .link-form { display: grid; gap: 8px; }
+    .link-label { color: #c7c8be; font-size: 11px; }
+    .link-input-row { display: flex; gap: 8px; }
+    .link-input {
+      min-width: 0;
+      flex: 1;
+      height: 43px;
+      padding: 0 12px;
+      border: 1px solid #3a3c34;
+      border-radius: 7px;
+      background: #131411;
+      color: var(--text);
+      font-size: 12px;
+    }
+    .link-submit {
+      padding: 0 15px;
+      border: 0;
+      border-radius: 7px;
+      background: var(--lime);
+      color: #171a11;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .link-submit:hover { background: #d5ff83; }
+    .link-help { min-height: 17px; margin: 1px 0 0; color: var(--muted); font-size: 10px; }
+    .link-help.error { color: #ff9b82; }
+    .link-result { margin-top: 20px; padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: #171815; }
+    .link-result h3 { margin: 0 0 10px; font-size: 12px; }
+    .link-result code { display: block; overflow-wrap: anywhere; color: var(--lime); font-family: var(--mono); font-size: 11px; line-height: 1.6; }
+    .risk-list { display: grid; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+    .risk-list li { display: flex; align-items: flex-start; gap: 8px; color: #bdbeb4; font-size: 11px; line-height: 1.5; }
+    .risk-list li::before { flex: 0 0 auto; color: var(--orange); content: "•"; }
+    .risk-list li.ok::before { color: var(--lime); content: "✓"; }
+    .link-disclaimer { margin-top: 14px !important; padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted) !important; font-size: 10px !important; }
+    .security-view { padding: 22px; }
+    .security-view h2 { margin: 0 0 8px; font-size: 17px; }
+    .security-intro, .scenario-prompt { color: #a6a79c; font-size: 12px; line-height: 1.65; }
+    .scenario-nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 18px 0; }
+    .scenario-tab {
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #171815;
+      color: #bdbeb4;
+      cursor: pointer;
+      font-size: 10px;
+      text-align: left;
+    }
+    .scenario-tab.active { border-color: #647844; background: #20241a; color: var(--lime); }
+    .scenario-card { padding: 17px; border: 1px solid var(--line); border-radius: 8px; background: #171815; }
+    .scenario-kicker { color: var(--lime); font-family: var(--mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+    .scenario-card h3 { margin: 8px 0; font-size: 14px; }
+    .scenario-prompt { margin: 0 0 15px; }
+    .scenario-options { display: grid; gap: 8px; }
+    .scenario-option {
+      padding: 11px 12px;
+      border: 1px solid #34352e;
+      border-radius: 6px;
+      background: #1d1e1a;
+      color: #d5d6cc;
+      cursor: pointer;
+      font-size: 11px;
+      line-height: 1.55;
+      text-align: left;
+    }
+    .scenario-option:hover:not(:disabled) { border-color: #626b4a; }
+    .scenario-option:disabled { cursor: default; opacity: .75; }
+    .scenario-option.correct { border-color: #647844; color: var(--lime); }
+    .scenario-option.incorrect { border-color: #76513c; color: #ffb389; }
+    .scenario-feedback { margin-top: 12px; padding: 12px; border-radius: 6px; background: #22241d; color: #c4c5ba; font-size: 11px; line-height: 1.6; }
+    .scenario-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+    .scenario-score { color: var(--muted); font-family: var(--mono); font-size: 10px; }
+    .scenario-next {
+      padding: 9px 12px;
+      border: 1px solid #485337;
+      border-radius: 6px;
+      background: #23271d;
+      color: var(--lime);
+      cursor: pointer;
+      font-size: 10px;
+    }
+    .scenario-next:disabled { color: #74756d; cursor: not-allowed; }
+    .phone-demo { margin-top: 18px; padding: 17px; border: 1px solid var(--line); border-radius: 8px; background: #171815; }
+    .phone-demo-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .phone-demo-header h3 { margin: 7px 0 5px; font-size: 14px; }
+    .phone-demo-header p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
+    .demo-badge { flex: 0 0 auto; padding: 5px 7px; border: 1px solid #485337; border-radius: 5px; color: var(--lime); font-family: var(--mono); font-size: 9px; }
+    .phone-demo-layout { display: grid; grid-template-columns: minmax(170px, .65fr) minmax(0, 1fr); gap: 16px; align-items: center; margin-top: 16px; }
+    .mock-phone { width: min(100%, 190px); margin: 0 auto; padding: 8px; border: 2px solid #55574c; border-radius: 23px; background: #0c0d0b; box-shadow: 0 10px 28px #0004; }
+    .mock-phone-notch { width: 54px; height: 9px; margin: 0 auto 7px; border-radius: 0 0 8px 8px; background: #34352f; }
+    .mock-phone-screen { min-height: 230px; padding: 13px 11px; border-radius: 15px; background: radial-gradient(ellipse at top, #252a1d, #111210 60%); }
+    .mock-phone-status { display: flex; justify-content: space-between; color: #a8aa9c; font-family: var(--mono); font-size: 8px; }
+    .mock-phone-icon { display: grid; width: 37px; height: 37px; margin: 19px auto 10px; place-items: center; border: 1px solid #596841; border-radius: 12px; background: #22271b; color: var(--lime); font-family: var(--mono); font-size: 18px; }
+    .mock-phone-title { color: #eee; font-size: 10px; font-weight: 700; text-align: center; }
+    .mock-phone-subtitle { margin-top: 4px; color: #8e9086; font-size: 8px; text-align: center; }
+    .mock-phone-screen ul { display: grid; gap: 7px; margin: 17px 0 0; padding: 0; list-style: none; }
+    .mock-phone-screen li { display: flex; gap: 6px; align-items: flex-start; color: #85877d; font-family: var(--mono); font-size: 8px; line-height: 1.45; }
+    .mock-phone-screen li::before { flex: 0 0 auto; color: #56584f; content: "○"; }
+    .mock-phone-screen li.done { color: #c6d4ad; }
+    .mock-phone-screen li.done::before { color: var(--lime); content: "✓"; }
+    .mock-phone-screen li.current { color: var(--orange); }
+    .mock-phone-screen li.current::before { color: var(--orange); content: "›"; }
+    .phone-demo-side { min-width: 0; }
+    .phone-demo-log { display: grid; gap: 8px; min-height: 104px; margin: 0; padding: 0; list-style: none; }
+    .phone-demo-log li { display: flex; gap: 9px; align-items: flex-start; color: #9ea095; font-size: 10px; line-height: 1.55; }
+    .phone-demo-log li::before { flex: 0 0 auto; color: #626459; content: "○"; }
+    .phone-demo-log li.done { color: #cbd8b4; }
+    .phone-demo-log li.done::before { color: var(--lime); content: "✓"; }
+    .phone-demo-log li.current { color: #ffd0a9; }
+    .phone-demo-log li.current::before { color: var(--orange); content: "›"; }
+    .phone-demo-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 11px; margin-top: 13px; }
+    .phone-demo-button { padding: 9px 12px; border: 1px solid #485337; border-radius: 6px; background: #23271d; color: var(--lime); cursor: pointer; font-size: 10px; }
+    .phone-demo-button:disabled { color: #74756d; cursor: not-allowed; }
+    .phone-demo-status { color: var(--muted); font-size: 9px; line-height: 1.5; }
+    .phone-demo-note { margin: 13px 0 0; padding-top: 10px; border-top: 1px solid var(--line); color: var(--muted); font-size: 9px; line-height: 1.55; }
+    .security-disclaimer { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; line-height: 1.6; }
+    .threat-view { padding: 22px; }
+    .threat-view h2 { margin: 0 0 8px; font-size: 17px; }
+    .threat-intro { margin: 0 0 15px; color: #a6a79c; font-size: 12px; line-height: 1.65; }
+    .threat-notice { margin: 0 0 17px; padding: 11px 12px; border: 1px solid #3a3d30; border-radius: 7px; background: #1d2019; color: #babcaf; font-size: 10px; line-height: 1.6; }
+    .threat-controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(155px, .5fr); gap: 9px; margin-bottom: 15px; }
+    .threat-search, .threat-filter {
+      min-width: 0;
+      height: 39px;
+      padding: 0 11px;
+      border: 1px solid #3a3c34;
+      border-radius: 6px;
+      background: #131411;
+      color: var(--text);
+      font-size: 11px;
+    }
+    .threat-count { margin: 0 0 10px; color: var(--muted); font-family: var(--mono); font-size: 9px; }
+    .threat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .threat-card { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: #171815; }
+    .threat-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .threat-category { color: var(--muted); font-family: var(--mono); font-size: 8px; letter-spacing: .7px; text-transform: uppercase; }
+    .threat-card h3 { margin: 6px 0 0; font-size: 12px; }
+    .risk-badge { flex: 0 0 auto; padding: 5px 7px; border: 1px solid #574033; border-radius: 5px; color: #ffb389; font-family: var(--mono); font-size: 8px; }
+    .risk-badge.medium { border-color: #5a5338; color: #ebcf7f; }
+    .risk-badge.low { border-color: #465239; color: var(--lime); }
+    .threat-detail { margin: 11px 0 0; color: #a9aa9f; font-size: 10px; line-height: 1.55; }
+    .threat-detail strong { color: #d7d8cf; font-weight: 600; }
+    .threat-empty { grid-column: 1 / -1; padding: 20px; border: 1px dashed #34352e; border-radius: 7px; color: var(--muted); font-size: 11px; text-align: center; }
+    .threat-disclaimer { margin: 15px 0 0; padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; line-height: 1.6; }
+    .challenge-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 17px; align-items: start; }
+    .view-card { padding: 22px; }
+    .view-card h2 { margin: 0 0 8px; font-size: 17px; }
+    .view-intro { margin: 0 0 18px; color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .stats-page-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .guide-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .guide-list li { padding: 12px; border: 1px solid var(--line); border-radius: 7px; background: #171815; color: #adb0a4; font-size: 11px; line-height: 1.6; }
+    .guide-list strong { color: var(--lime); }
+    .auth-panel { max-width: 480px; }
+    .auth-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+    .auth-tab { padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; background: #171815; color: #a6a79c; cursor: pointer; font-size: 11px; }
+    .auth-tab.active { border-color: #647844; color: var(--lime); }
+    .auth-form { display: grid; gap: 10px; }
+    .auth-form label { display: grid; gap: 6px; color: #c7c8be; font-size: 10px; }
+    .auth-form input, .online-form input, .online-form select {
+      width: 100%;
+      min-width: 0;
+      height: 40px;
+      padding: 0 11px;
+      border: 1px solid #3a3c34;
+      border-radius: 6px;
+      background: #131411;
+      color: var(--text);
+      font-size: 12px;
+    }
+    .auth-action, .online-action { width: fit-content; padding: 10px 13px; border: 0; border-radius: 6px; background: var(--lime); color: #171a11; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .auth-action:disabled, .online-action:disabled { cursor: not-allowed; opacity: .55; }
+    .auth-status, .online-status { min-height: 17px; margin: 9px 0 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
+    .auth-status.error, .online-status.error { color: #ff9b82; }
+    .auth-status.success, .online-status.success { color: var(--lime); }
+    .auth-session { padding: 14px; border: 1px solid #3b3d32; border-radius: 7px; background: #1d2019; color: #c7c8be; font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
+    .online-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 13px; }
+    .online-panel { padding: 15px; border: 1px solid var(--line); border-radius: 8px; background: #171815; }
+    .online-help-copy { margin: 10px 0 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
+    .active-room { margin-top: 13px; }
+    .online-panel h3.room-guesses-heading { margin-top: 14px; }
+    .online-panel h3 { margin: 0 0 10px; font-size: 12px; }
+    .online-form { display: grid; gap: 9px; }
+    .online-form label { display: grid; gap: 6px; color: #c7c8be; font-size: 10px; }
+    .room-code-display { margin: 10px 0; color: var(--lime); font-family: var(--mono); font-size: 25px; letter-spacing: 5px; }
+    .room-members, .room-guesses { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+    .room-members li, .room-guesses li { padding: 9px; border: 1px solid #2d2e29; border-radius: 6px; background: #131411; color: #bdbeb4; font-size: 10px; }
+    .room-guesses code { color: var(--lime); font-family: var(--mono); letter-spacing: 3px; }
+    .room-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0; }
+    .online-guess-row { display: flex; gap: 8px; margin-top: 12px; }
+    .online-guess-row input { max-width: 155px; }
+    .room-result { margin-top: 10px; color: var(--lime); font-size: 11px; line-height: 1.6; }
+    .card { border: 1px solid var(--line); border-radius: 11px; background: var(--panel); }
+    .game-card { overflow: hidden; }
+    .challenge-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 17px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .challenge-type { color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: .6px; text-transform: uppercase; }
+    .difficulty { display: flex; align-items: center; gap: 7px; color: #d7d8cf; font-size: 10px; }
+    .difficulty-dots { display: flex; gap: 3px; }
+    .difficulty-dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--lime); }
+    .difficulty-dots i:last-child { background: #43453d; }
+    .game-body { padding: 22px 22px 20px; }
+    .mission {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 22px;
+      padding: 13px 14px;
+      border: 1px solid #34372b;
+      border-radius: 8px;
+      background: #1d2019;
+    }
+    .mission-icon { padding-top: 1px; color: var(--lime); font-family: var(--mono); font-size: 15px; }
+    .mission h2 { margin: 0 0 4px; font-size: 12px; font-weight: 650; }
+    .mission p { margin: 0; color: #a1a296; font-size: 11px; line-height: 1.55; }
+    .mission .alternatives-copy { margin-top: 7px; color: var(--lime); font-size: 10px; }
+    .code-label { margin-bottom: 9px; color: #a9aa9f; font-size: 10px; }
+    .input-row { display: flex; gap: 8px; }
+    .code-input {
+      width: 100%;
+      min-width: 0;
+      height: 43px;
+      padding: 0 13px;
+      border: 1px solid #3a3c34;
+      border-radius: 7px;
+      background: #131411;
+      color: var(--lime);
+      font-family: var(--mono);
+      font-size: 17px;
+      letter-spacing: 8px;
+    }
+    .code-input::placeholder { color: #55564e; letter-spacing: 7px; }
+    .submit-button {
+      flex: 0 0 auto;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 7px;
+      background: var(--lime);
+      color: #171a11;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 750;
+      transition: background .15s, transform .15s;
+    }
+    .submit-button:hover { background: #d5ff83; transform: translateY(-1px); }
+    .submit-button:disabled { cursor: not-allowed; opacity: .5; transform: none; }
+    .input-help { min-height: 17px; margin: 7px 0 13px; color: var(--muted); font-size: 10px; }
+    .input-help.error { color: #ff9b82; }
+    .input-help.success { color: var(--lime); }
+    .guess-header { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 8px; }
+    .guess-header span:first-child { color: #c7c8be; font-size: 10px; font-weight: 600; }
+    .guess-count { color: var(--muted); font-family: var(--mono); font-size: 10px; }
+    .guess-list { display: grid; gap: 6px; }
+    .guess-row {
+      display: grid;
+      grid-template-columns: 27px 1fr auto;
+      align-items: center;
+      min-height: 39px;
+      padding: 0 11px;
+      border: 1px solid #2d2e29;
+      border-radius: 6px;
+      background: #171815;
+    }
+    .guess-number { color: #717268; font-family: var(--mono); font-size: 9px; }
+    .guess-code { color: #e1e2d9; font-family: var(--mono); font-size: 13px; letter-spacing: 5px; }
+    .guess-feedback { display: flex; align-items: center; gap: 7px; color: #a6a79c; font-size: 9px; }
+    .feedback-dots { display: flex; gap: 3px; }
+    .feedback-dots i { width: 6px; height: 6px; border-radius: 50%; background: #41433a; }
+    .feedback-dots i.exact { background: var(--lime); }
+    .feedback-dots i.misplaced { background: var(--orange); }
+    .guess-empty { padding: 16px 10px; border: 1px dashed #34352e; border-radius: 6px; color: #76776e; font-size: 10px; text-align: center; }
+    .game-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .attempt-note { color: var(--muted); font-size: 10px; }
+    .footer-actions { display: flex; align-items: center; gap: 14px; }
+    .text-button {
+      padding: 5px 0;
+      border: 0;
+      background: transparent;
+      color: #b8b9af;
+      cursor: pointer;
+      font-size: 10px;
+    }
+    .text-button:hover { color: var(--lime); }
+    .text-button:disabled { color: #74756d; cursor: not-allowed; }
+    .ai-button {
+      padding: 8px 11px;
+      border: 1px solid #485337;
+      border-radius: 6px;
+      background: #23271d;
+      color: var(--lime);
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 650;
+      transition: background .15s;
+    }
+    .ai-button:hover { background: #2c3321; }
+    .ai-button:disabled { color: #74756d; cursor: not-allowed; }
+    .side-column { display: grid; gap: 13px; }
+    .stats-card { padding: 17px; }
+    .section-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .section-title h2 { margin: 0; font-size: 12px; font-weight: 650; }
+    .section-title span { color: #74756d; font-family: var(--mono); font-size: 9px; }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-box { padding: 12px 10px; border: 1px solid #2d2e29; border-radius: 7px; background: #171815; }
+    .stat-value { font-family: var(--mono); font-size: 19px; letter-spacing: -.8px; }
+    .stat-label { margin-top: 5px; color: var(--muted); font-size: 9px; }
+    .progress-card { padding: 16px 17px; }
+    .progress-title { display: flex; justify-content: space-between; color: #d6d7ce; font-size: 10px; }
+    .progress-title span:last-child { color: var(--lime); font-family: var(--mono); }
+    .progress-track { height: 5px; margin: 11px 0 8px; overflow: hidden; border-radius: 9px; background: #33342e; }
+    .progress-fill { width: 0; height: 100%; border-radius: inherit; background: var(--lime); transition: width .35s ease; }
+    .progress-copy { color: var(--muted); font-size: 9px; }
+    .hint-card { padding: 16px 17px; }
+    .hint-copy { margin: 0; color: #a6a79c; font-size: 10px; line-height: 1.65; }
+    .hint-copy strong { color: #d9dacd; font-weight: 550; }
+    .hint-button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 9px;
+      border: 1px solid #3b3d32;
+      border-radius: 6px;
+      background: #20211d;
+      color: var(--lime);
+      cursor: pointer;
+      font-size: 10px;
+      transition: background .15s;
+    }
+    .hint-button:hover { background: #292c21; }
+    .hint-button:disabled { color: #74756d; cursor: default; }
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 5;
+      max-width: min(360px, calc(100vw - 32px));
+      padding: 12px 16px;
+      border: 1px solid #495337;
+      border-radius: 8px;
+      background: #23271d;
+      color: var(--lime);
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity .2s, transform .2s;
+    }
+    .toast.visible { opacity: 1; transform: translateY(0); }
+    .mobile-brand { display: none; }
+
+    @media (max-width: 940px) {
+      main { padding-right: 26px; padding-left: 26px; }
+      .challenge-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+      .game-body { padding: 18px; }
+    }
+    @media (max-width: 720px) {
+      .sidebar { position: sticky; top: 0; bottom: auto; width: 100%; height: auto; min-height: 0; display: grid; grid-template-columns: 1fr; align-items: stretch; gap: 8px; padding: 9px 13px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .brand { padding: 0; }
+      .brand-mark { width: 29px; height: 29px; }
+      .side-label, .side-bottom, .mobile-brand { display: none; }
+      .nav-list { display: flex; flex-wrap: wrap; gap: 5px; overflow: visible; padding: 1px 0 3px; }
+      .nav-link { flex: 0 0 auto; padding: 7px 9px; font-size: 10px; white-space: nowrap; }
+      .app-shell { display: block; }
+      main { width: 100%; margin-left: 0; padding: 0 18px 40px; }
+      .topbar { height: 54px; }
+      .intro { padding-top: 28px; }
+      .challenge-layout { grid-template-columns: 1fr; }
+      .stats-page-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .online-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 450px) {
+      main { padding-right: 13px; padding-left: 13px; }
+      .top-right { gap: 10px; }
+      .streak { font-size: 10px; }
+      .intro { padding-bottom: 21px; }
+      .game-body { padding: 14px; }
+      .challenge-head { padding: 14px; }
+      .stats-page-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .guess-feedback { gap: 4px; font-size: 8px; }
+      .guess-row { padding: 0 8px; }
+      .guess-code { letter-spacing: 4px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <a class="brand" href="#" aria-label="QuebraCode, início">
+        <span class="brand-mark">Q</span>
+        <span>quebra<span>code</span></span>
+      </a>
+      <span class="mobile-brand">LABORATÓRIO DE LÓGICA</span>
+      <div class="side-label">Laboratório</div>
+      <nav class="nav-list">
+        <a class="nav-link active" href="#jogar" aria-current="page"><span class="nav-icon">◈</span> Jogar</a>
+        <a class="nav-link" href="#progresso"><span class="nav-icon">▤</span> Meu progresso</a>
+        <a class="nav-link" href="#como-jogar"><span class="nav-icon">⌘</span> Como jogar</a>
+        <a class="nav-link" href="#online"><span class="nav-icon">◎</span> Online</a>
+        <a class="nav-link" href="#conta"><span class="nav-icon">○</span> Login</a>
+        <a class="nav-link" href="#analisar-link"><span class="nav-icon">↗</span> Analisar link</a>
+        <a class="nav-link" href="#seguranca-digital"><span class="nav-icon">◇</span> Segurança digital</a>
+        <a class="nav-link" href="#catalogo-ameacas"><span class="nav-icon">▦</span> Catálogo de ameaças</a>
+      </nav>
+      <div class="side-bottom">
+        <div class="safe-note">
+          <div class="safe-note-title"><span class="safe-dot"></span> Jogo seguro</div>
+          <p>Treinamento educativo com exemplos fictícios. Nenhuma conta ou dado real é acessado.</p>
+        </div>
+        <div class="profile">
+          <div class="avatar" aria-hidden="true">VC</div>
+          <div><div class="profile-name" id="profile-name">Visitante</div><div class="profile-level" id="profile-level">Entre para jogar online</div></div>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div class="breadcrumb">Laboratório <span aria-hidden="true">/</span> <strong>Jogar</strong></div>
+        <div class="top-right">
+          <div class="streak" aria-label="Sequência de desafios"><b>✳ 0</b> sequência</div>
+          <span class="top-divider" aria-hidden="true"></span>
+          <span class="level-pill" id="level-pill">FASE 01 / 03</span>
+        </div>
+      </header>
+      <div class="page-content">
+        <div id="game-view">
+        <section class="intro" id="desafio">
+          <div class="eyebrow"><span class="eyebrow-line"></span> Seu espaço de raciocínio</div>
+          <h1>Decifre a sequência.</h1>
+          <p>Escolha uma fase, decifre senhas cada vez maiores e use as pistas para chegar à solução.</p>
+        </section>
+
+        <nav class="stage-picker" id="stage-picker" aria-label="Escolher fase">
+          <button class="stage-option active" type="button" data-stage="0" aria-pressed="true">
+            <span class="stage-option-title">01 · Iniciante</span><span class="stage-option-meta">4 dígitos · 8 tentativas</span>
+          </button>
+          <button class="stage-option" type="button" data-stage="1" aria-pressed="false">
+            <span class="stage-option-title">02 · Intermediária</span><span class="stage-option-meta">5 dígitos · 10 tentativas</span>
+          </button>
+          <button class="stage-option" type="button" data-stage="2" aria-pressed="false">
+            <span class="stage-option-title">03 · Especialista</span><span class="stage-option-meta">6 dígitos · 12 tentativas</span>
+          </button>
+        </nav>
+
+        <div class="challenge-layout">
+          <section class="card game-card" aria-labelledby="challenge-title">
+            <div class="challenge-head">
+              <span class="challenge-type" id="challenge-title">FASE 01 <span aria-hidden="true">·</span> INICIANTE</span>
+              <span class="difficulty"><span class="difficulty-dots" id="difficulty-dots" aria-hidden="true"><i></i><i></i><i></i></span><span id="difficulty-label">Fácil</span></span>
+            </div>
+            <div class="game-body">
+              <div class="mission">
+                <span class="mission-icon" aria-hidden="true">⌁</span>
+                <div>
+                  <h2>Sua missão</h2>
+                  <p id="mission-copy">Descubra a senha de <strong>4 dígitos diferentes</strong>. Após cada tentativa, você verá quantos estão no lugar certo e quantos aparecem em outra posição.</p>
+                  <p class="alternatives-copy" id="alternatives-copy">Uma senha alternativa será sorteada em cada novo desafio.</p>
+                </div>
+              </div>
+              <form id="guess-form" novalidate>
+                <label class="code-label" for="code-input">Sua tentativa</label>
+                <div class="input-row">
+                  <input class="code-input" id="code-input" name="guess" type="text" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="••••" aria-describedby="input-help" aria-label="Digite uma sequência de quatro dígitos diferentes">
+                  <button class="submit-button" id="submit-button" type="submit">Testar código <span aria-hidden="true">→</span></button>
+                </div>
+                <p class="input-help" id="input-help" aria-live="polite">4 números diferentes de 0 a 9.</p>
+              </form>
+              <div class="guess-header"><span>Histórico de tentativas</span><span class="guess-count" id="guess-count">0 / 8</span></div>
+              <div class="guess-list" id="guess-list" aria-live="polite">
+                <div class="guess-empty">Suas tentativas aparecerão aqui. Boa sorte!</div>
+              </div>
+              <div class="game-footer">
+                <span class="attempt-note" id="attempt-note">Você tem até 8 tentativas</span>
+                <div class="footer-actions">
+                  <button class="ai-button" id="ai-button" type="button">✳ Resolver com IA</button>
+                  <button class="text-button" id="new-game-button" type="button">↻ Novo</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+        </div>
+        <section class="card view-card" id="progress-view" aria-labelledby="stats-heading" hidden>
+          <h2 id="stats-heading">Meu progresso</h2>
+          <p class="view-intro">Acompanhe os desafios resolvidos e seus pontos neste navegador.</p>
+          <div class="stats-page-grid">
+            <div class="stat-box"><div class="stat-value" id="games-won">0</div><div class="stat-label">Desafios resolvidos</div></div>
+            <div class="stat-box"><div class="stat-value" id="best-score">—</div><div class="stat-label">Melhor resultado</div></div>
+            <div class="stat-box"><div class="stat-value" id="total-points">0</div><div class="stat-label">Pontos acumulados</div></div>
+            <div class="stat-box"><div class="stat-value" id="win-rate">0%</div><div class="stat-label">Taxa de acerto</div></div>
+          </div>
+          <section class="card progress-card" style="margin-top:14px" aria-label="Progresso da partida atual">
+            <div class="progress-title"><span>Progresso da partida atual</span><span id="progress-label">0%</span></div>
+            <div class="progress-track" role="progressbar" id="progress-bar" aria-label="Progresso das tentativas" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0"><div class="progress-fill" id="progress-fill"></div></div>
+            <div class="progress-copy" id="progress-copy">8 tentativas disponíveis</div>
+          </section>
+        </section>
+        <section class="card view-card" id="guide-view" aria-labelledby="guide-heading" hidden>
+          <h2 id="guide-heading">Como jogar</h2>
+          <p class="view-intro">Descubra a sequência por tentativa e use as pistas para eliminar possibilidades.</p>
+          <ol class="guide-list">
+            <li><strong>Escolha uma fase.</strong> Iniciante usa 4 dígitos, Intermediária 5 e Especialista 6. Os dígitos não se repetem.</li>
+            <li><strong>Faça uma tentativa.</strong> Digite a quantidade de dígitos pedida e selecione “Testar código”. Você recebe o total no lugar correto e em outra posição.</li>
+            <li><strong>Use o retorno para deduzir.</strong> Anote quais dígitos já foram testados e como a posição muda.</li>
+            <li><strong>Peça uma pista</strong> quando precisar de ajuda, ou deixe a IA resolver usando as pistas já mostradas.</li>
+            <li><strong>Jogue online.</strong> Entre na sua conta, crie uma sala e compartilhe o código para que outras pessoas entrem na mesma partida.</li>
+          </ol>
+          <section class="card hint-card" style="margin-top:14px" aria-labelledby="hint-heading">
+            <div class="section-title"><h2 id="hint-heading">Pista da partida atual</h2><span>◉</span></div>
+            <p class="hint-copy" id="hint-copy">Pense primeiro na <strong>posição</strong> de cada dígito. Elimine combinações com base no retorno de cada tentativa.</p>
+            <button class="hint-button" id="hint-button" type="button">Revelar uma pista <span aria-hidden="true">↗</span></button>
+          </section>
+        </section>
+        <section class="card view-card" id="auth-view" aria-labelledby="auth-heading" hidden>
+          <div class="auth-panel">
+            <h2 id="auth-heading">Sua conta QuebraCode</h2>
+            <p class="view-intro">Entre ou crie uma conta para participar de salas online.</p>
+            <div class="auth-session" id="auth-session" hidden></div>
+            <div id="auth-forms">
+              <div class="auth-tabs" role="group" aria-label="Tipo de acesso">
+                <button class="auth-tab active" id="login-tab" type="button" aria-pressed="true">Entrar</button>
+                <button class="auth-tab" id="signup-tab" type="button" aria-pressed="false">Criar conta</button>
+              </div>
+              <form class="auth-form" id="login-form">
+                <label>E-mail<input id="login-email" name="email" type="email" autocomplete="email" maxlength="254" required></label>
+                <label>Senha<input id="login-password" name="password" type="password" autocomplete="current-password" minlength="10" maxlength="128" required></label>
+                <button class="auth-action" type="submit">Entrar com e-mail</button>
+              </form>
+              <form class="auth-form" id="signup-form" hidden>
+                <label>Apelido de jogador<input id="signup-name" name="displayName" type="text" autocomplete="nickname" minlength="2" maxlength="24" required></label>
+                <label>E-mail<input id="signup-email" name="email" type="email" autocomplete="email" maxlength="254" required></label>
+                <label>Senha (mínimo 10 caracteres)<input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></label>
+                <button class="auth-action" type="submit">Criar conta segura</button>
+              </form>
+            </div>
+            <p class="auth-status" id="auth-status" role="status" aria-live="polite">Configure o Firebase para habilitar autenticação segura.</p>
+            <p class="threat-disclaimer">O login só é habilitado em hospedagem HTTPS. A senha é validada pelo Firebase Authentication e não é armazenada pelo jogo. Nunca use uma senha já utilizada em outro serviço.</p>
+          </div>
+        </section>
+        <section class="card view-card" id="online-view" aria-labelledby="online-heading" hidden>
+          <h2 id="online-heading">Partida online</h2>
+          <p class="view-intro">Crie uma sala privada ou entre com um código. Os palpites e as pistas são compartilhados ao vivo entre os jogadores. É necessário fazer login.</p>
+          <p class="online-status" id="online-status" role="status" aria-live="polite">Entre na sua conta e configure o Firebase para criar ou entrar em uma sala.</p>
+          <div class="online-layout">
+            <section class="online-panel" aria-labelledby="create-room-heading">
+              <h3 id="create-room-heading">Criar uma sala</h3>
+              <form class="online-form" id="create-room-form">
+                <label>Apelido nesta sala<input id="room-nickname" type="text" minlength="2" maxlength="24" autocomplete="nickname" required></label>
+                <button class="online-action" type="submit">Criar partida</button>
+              </form>
+              <p class="online-help-copy">Compartilhe o código da sala com quem vai jogar. Não compartilhe credenciais da sua conta.</p>
+            </section>
+            <section class="online-panel" aria-labelledby="join-room-heading">
+              <h3 id="join-room-heading">Entrar em uma sala</h3>
+              <form class="online-form" id="join-room-form">
+                <label>Código da sala<input id="join-room-code" type="text" inputmode="text" maxlength="10" pattern="[A-Fa-f0-9]{10}" autocapitalize="characters" required></label>
+                <label>Apelido nesta sala<input id="join-nickname" type="text" minlength="2" maxlength="24" autocomplete="nickname" required></label>
+                <button class="online-action" type="submit">Entrar na sala</button>
+              </form>
+            </section>
+          </div>
+          <section class="online-panel active-room" id="active-room" aria-labelledby="active-room-heading" hidden>
+            <h3 id="active-room-heading">Sala ativa</h3>
+            <div class="room-code-display" id="room-code-display"></div>
+            <p class="online-status" id="room-status-label"></p>
+            <div class="room-actions">
+              <button class="text-button" id="copy-room-code" type="button">Copiar código</button>
+              <button class="online-action" id="start-room" type="button" hidden>Iniciar partida</button>
+              <button class="text-button" id="leave-room" type="button">Sair da sala</button>
+            </div>
+            <h3>Jogadores</h3>
+            <ul class="room-members" id="room-members"></ul>
+            <h3 class="room-guesses-heading">Palpites compartilhados</h3>
+            <ul class="room-guesses" id="room-guesses"></ul>
+            <form class="online-guess-row" id="online-guess-form" hidden>
+              <input id="online-guess" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off" aria-label="Palpite de quatro dígitos diferentes" placeholder="4 dígitos" required>
+              <button class="online-action" type="submit">Enviar palpite</button>
+            </form>
+            <p class="room-result" id="room-result" hidden></p>
+          </section>
+          <p class="threat-disclaimer">A sala online requer Firebase configurado, funções implantadas e hospedagem pública HTTPS. As regras limitam a leitura aos membros; a sequência fica em um documento privado no servidor.</p>
+        </section>
+        <section class="card link-view" id="link-view" aria-labelledby="link-heading" hidden>
+          <h2 id="link-heading">Analisar um link</h2>
+          <p>Confira o formato e alguns sinais de atenção antes de abrir um endereço. A análise acontece no seu navegador: o link não é acessado nem enviado a um servidor.</p>
+          <form class="link-form" id="link-form" novalidate>
+            <label class="link-label" for="link-input">Endereço para analisar</label>
+            <div class="link-input-row">
+              <input class="link-input" id="link-input" name="url" type="text" inputmode="url" autocomplete="url" placeholder="https://exemplo.com" aria-describedby="link-help">
+              <button class="link-submit" type="submit">Analisar</button>
+            </div>
+            <p class="link-help" id="link-help" aria-live="polite">Nenhuma conexão será feita ao endereço informado.</p>
+          </form>
+          <div class="link-result" id="link-result" aria-live="polite" hidden></div>
+          <p class="link-disclaimer">Esta verificação é apenas indicativa e não confirma se um site é seguro ou legítimo. Nunca compartilhe senhas, códigos de verificação ou dados pessoais em links desconhecidos.</p>
+        </section>
+        <section class="card security-view" id="security-view" aria-labelledby="security-heading" hidden>
+          <h2 id="security-heading">Aprenda a reconhecer golpes</h2>
+          <p class="security-intro">Treine com exemplos fictícios de phishing, engenharia social por telefone e tentativas de uso indevido de dados pessoais. Escolha a resposta mais segura em cada situação.</p>
+          <div class="scenario-nav" id="scenario-nav" role="group" aria-label="Escolher cenário"></div>
+          <article class="scenario-card" id="scenario-card" aria-live="polite"></article>
+          <section class="phone-demo" aria-labelledby="phone-demo-heading">
+            <div class="phone-demo-header">
+              <div><div class="scenario-kicker">Laboratório isolado</div><h3 id="phone-demo-heading">Simulação em telefone fictício</h3><p>Observe como verificar alertas suspeitos sem tocar em nenhum dispositivo real.</p></div>
+              <span class="demo-badge">100% FICTÍCIO</span>
+            </div>
+            <div class="phone-demo-layout">
+              <div class="mock-phone" aria-label="Ilustração de um telefone simulado">
+                <div class="mock-phone-notch"></div>
+                <div class="mock-phone-screen">
+                  <div class="mock-phone-status"><span>DEMO-000</span><span>SIMULADO</span></div>
+                  <div class="mock-phone-icon" aria-hidden="true">◇</div>
+                  <div class="mock-phone-title">Dispositivo de treino</div>
+                  <div class="mock-phone-subtitle">Nenhum telefone conectado</div>
+                  <ul id="phone-screen-steps" aria-label="Etapas da simulação"></ul>
+                </div>
+              </div>
+              <div class="phone-demo-side">
+                <ol class="phone-demo-log" id="phone-demo-log" aria-live="polite"></ol>
+                <div class="phone-demo-controls">
+                  <button class="phone-demo-button" id="phone-demo-button" type="button">Iniciar simulação</button>
+                  <span class="phone-demo-status" id="phone-demo-status" role="status">Pronto para executar uma demonstração local.</span>
+                </div>
+              </div>
+            </div>
+            <p class="phone-demo-note">A animação usa apenas mensagens de demonstração definidas nesta página. Não faz chamadas de rede, não pede permissões e não acessa dados, câmera, microfone ou contas.</p>
+          </section>
+          <p class="security-disclaimer">Este laboratório é educativo: não pede e-mail, telefone, CPF, senhas ou códigos reais e não ensina a invadir contas. Em caso de fraude real, contate a instituição pelos canais oficiais e siga as orientações das autoridades locais.</p>
+        </section>
+        <section class="card threat-view" id="threat-view" aria-labelledby="threat-heading" hidden>
+          <h2 id="threat-heading">Catálogo de ameaças digitais</h2>
+          <p class="threat-intro">Conheça técnicas de fraude e ataques comuns, como funcionam em alto nível e como reduzir o risco.</p>
+          <p class="threat-notice"><strong>Sobre os níveis:</strong> risco potencial qualitativo, não uma medição em tempo real. O impacto depende do alvo, das proteções e do contexto. Este catálogo é educativo e não é exaustivo.</p>
+          <div class="threat-controls">
+            <input class="threat-search" id="threat-search" type="search" placeholder="Buscar ameaça ou proteção" aria-label="Buscar no catálogo de ameaças">
+            <select class="threat-filter" id="threat-filter" aria-label="Filtrar por risco">
+              <option value="todos">Todos os riscos</option>
+              <option value="alto">Risco potencial alto</option>
+              <option value="medio">Risco potencial médio</option>
+              <option value="baixo">Risco potencial baixo</option>
+            </select>
+          </div>
+          <p class="threat-count" id="threat-count" aria-live="polite"></p>
+          <div class="threat-grid" id="threat-grid" aria-live="polite"></div>
+          <p class="threat-disclaimer">Use estas informações para prevenção, conscientização e resposta defensiva. Não use para tentar acessar contas, sistemas ou dispositivos de terceiros. Em caso de incidente, procure a equipe de TI, a instituição afetada e os canais oficiais adequados.</p>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      "use strict";
+
+      const stages = [
+        { name: "Iniciante", digits: 4, attempts: 8, alternatives: 3, difficulty: "Fácil" },
+        { name: "Intermediária", digits: 5, attempts: 10, alternatives: 5, difficulty: "Médio" },
+        { name: "Especialista", digits: 6, attempts: 12, alternatives: 8, difficulty: "Difícil" }
+      ];
+      const STORAGE_KEY = "quebracode-stats-v1";
+      const input = document.querySelector("#code-input");
+      const form = document.querySelector("#guess-form");
+      const help = document.querySelector("#input-help");
+      const guessList = document.querySelector("#guess-list");
+      const guessCount = document.querySelector("#guess-count");
+      const submitButton = document.querySelector("#submit-button");
+      const progressFill = document.querySelector("#progress-fill");
+      const progressLabel = document.querySelector("#progress-label");
+      const progressBar = document.querySelector("#progress-bar");
+      const progressCopy = document.querySelector("#progress-copy");
+      const hintCopy = document.querySelector("#hint-copy");
+      const hintButton = document.querySelector("#hint-button");
+      const aiButton = document.querySelector("#ai-button");
+      const attemptNote = document.querySelector("#attempt-note");
+      const gameTitle = document.querySelector("#challenge-title");
+      const missionCopy = document.querySelector("#mission-copy");
+      const alternativesCopy = document.querySelector("#alternatives-copy");
+      const difficultyDots = document.querySelector("#difficulty-dots");
+      const difficultyLabel = document.querySelector("#difficulty-label");
+      const levelPill = document.querySelector("#level-pill");
+      const gameView = document.querySelector("#game-view");
+      const progressView = document.querySelector("#progress-view");
+      const guideView = document.querySelector("#guide-view");
+      const linkView = document.querySelector("#link-view");
+      const securityView = document.querySelector("#security-view");
+      const threatView = document.querySelector("#threat-view");
+      const threatSearch = document.querySelector("#threat-search");
+      const threatFilter = document.querySelector("#threat-filter");
+      const threatGrid = document.querySelector("#threat-grid");
+      const threatCount = document.querySelector("#threat-count");
+      const scenarioNav = document.querySelector("#scenario-nav");
+      const scenarioCard = document.querySelector("#scenario-card");
+      const phoneDemoButton = document.querySelector("#phone-demo-button");
+      const phoneDemoStatus = document.querySelector("#phone-demo-status");
+      const phoneScreenSteps = document.querySelector("#phone-screen-steps");
+      const phoneDemoLog = document.querySelector("#phone-demo-log");
+      const linkForm = document.querySelector("#link-form");
+      const linkInput = document.querySelector("#link-input");
+      const linkHelp = document.querySelector("#link-help");
+      const linkResult = document.querySelector("#link-result");
+      const breadcrumbTitle = document.querySelector(".breadcrumb strong");
+      const toast = document.querySelector("#toast");
+      const codeCache = new Map();
+      const securityScenarios = [
+        {
+          title: "E-mail inesperado",
+          kicker: "Phishing · e-mail",
+          prompt: "Você recebe uma mensagem fictícia dizendo que sua conta será bloqueada hoje. Ela pede sua senha e um código de verificação em um link. O que fazer?",
+          options: [
+            "Abrir o link e preencher os dados para evitar o bloqueio.",
+            "Responder com o código para confirmar que a conta é sua.",
+            "Não clicar nem responder; conferir a conta pelo aplicativo ou endereço oficial digitado por você."
+          ],
+          answer: 2,
+          explanation: "Urgência e pedido de senha ou código são sinais de alerta. Acesse o serviço somente pelo aplicativo ou endereço oficial que você já conhece; nunca compartilhe códigos de verificação."
+        },
+        {
+          title: "Ligação pedindo um código",
+          kicker: "Engenharia social · telefone",
+          prompt: "Uma pessoa liga dizendo ser do suporte e pede o código que acabou de chegar por SMS para “cancelar uma fraude”. Qual é a resposta mais segura?",
+          options: [
+            "Ler o código, pois quem ligou já sabe seu nome.",
+            "Encerrar a ligação e contatar a instituição por um canal oficial encontrado por você.",
+            "Enviar também uma foto do documento para agilizar a verificação."
+          ],
+          answer: 1,
+          explanation: "Códigos de uso único são secretos: não os informe por telefone, mensagem ou chat. Encerre o contato e use o número oficial do cartão ou do site digitado por você."
+        },
+        {
+          title: "Uso indevido de CPF",
+          kicker: "Dados pessoais · CPF",
+          prompt: "Chega um aviso inesperado sobre uma conta ou crédito que você não reconhece. A mensagem pede CPF, foto de documento e pagamento de uma taxa para resolver. O que fazer?",
+          options: [
+            "Enviar os dados e pagar a taxa para evitar consequências.",
+            "Responder pedindo que confirmem se a mensagem é verdadeira.",
+            "Não responder; verificar diretamente com a instituição pelos canais oficiais e contestar qualquer atividade que não reconheça."
+          ],
+          answer: 2,
+          explanation: "Não envie documentos, CPF ou pagamentos em resposta a mensagens inesperadas. Procure a instituição por um canal oficial independente e, se identificar fraude, siga as orientações oficiais de contestação e proteção de identidade."
+        }
+      ];
+      const threatCatalog = [
+        {
+          name: "Phishing por e-mail",
+          category: "Engenharia social",
+          risk: "alto",
+          operation: "Mensagens se passam por serviços conhecidos e tentam induzir a pessoa a revelar dados ou seguir instruções enganosas.",
+          danger: "Pode resultar em roubo de contas, exposição de dados ou prejuízo financeiro.",
+          prevention: "Confira o remetente e o domínio; entre no serviço pelo aplicativo ou endereço oficial, não por links inesperados."
+        },
+        {
+          name: "Golpes por SMS ou mensageiro",
+          category: "Engenharia social",
+          risk: "alto",
+          operation: "Mensagens inesperadas criam urgência e tentam obter respostas, pagamentos ou acesso a contas.",
+          danger: "Podem levar à perda de dinheiro, tomada de conta ou exposição de informações pessoais.",
+          prevention: "Confirme pedidos por outro canal conhecido e nunca compartilhe senhas nem códigos de verificação."
+        },
+        {
+          name: "Falsa identidade por telefone",
+          category: "Engenharia social",
+          risk: "alto",
+          operation: "Alguém finge ser suporte, banco ou autoridade para pressionar a vítima a obedecer.",
+          danger: "A pessoa pode autorizar ações ou entregar dados acreditando falar com uma fonte legítima.",
+          prevention: "Encerre a chamada e procure você mesmo o número oficial. Não confie apenas no identificador de chamadas."
+        },
+        {
+          name: "QR code malicioso",
+          category: "Engenharia social",
+          risk: "alto",
+          operation: "Um código QR inesperado pode direcionar a uma página enganosa ou a um destino diferente do anunciado.",
+          danger: "Pode expor dados ou induzir pagamentos e ações que não eram pretendidos.",
+          prevention: "Confira o endereço exibido antes de continuar e use apenas códigos de fontes confiáveis."
+        },
+        {
+          name: "Reutilização de senha",
+          category: "Contas",
+          risk: "alto",
+          operation: "Senhas expostas em um serviço podem ser tentadas em outras contas onde a mesma combinação foi reutilizada.",
+          danger: "Uma única exposição pode comprometer várias contas pessoais ou de trabalho.",
+          prevention: "Use uma senha exclusiva para cada serviço, um gerenciador de senhas e autenticação multifator."
+        },
+        {
+          name: "Troca fraudulenta de SIM",
+          category: "Contas e telefone",
+          risk: "alto",
+          operation: "Uma fraude contra a operadora pode transferir o número telefônico da vítima para outro chip.",
+          danger: "Chamadas e mensagens de recuperação de conta podem deixar de chegar ao titular.",
+          prevention: "Proteja a conta da operadora com PIN ou controles disponíveis e prefira autenticadores a SMS quando possível."
+        },
+        {
+          name: "Malware e aplicativos falsos",
+          category: "Dispositivos",
+          risk: "alto",
+          operation: "Programas maliciosos podem se apresentar como arquivos, aplicativos ou atualizações legítimas.",
+          danger: "Dependendo do caso, podem roubar dados, espionar atividades ou danificar arquivos.",
+          prevention: "Instale aplicativos de fontes oficiais, mantenha o sistema atualizado e evite anexos inesperados."
+        },
+        {
+          name: "Ransomware",
+          category: "Dispositivos e organizações",
+          risk: "alto",
+          operation: "Um tipo de malware pode bloquear o acesso a arquivos ou sistemas e exigir pagamento.",
+          danger: "Pode interromper atividades e causar perda ou exposição de informações.",
+          prevention: "Mantenha cópias de segurança isoladas e testadas, atualizações em dia e um plano de resposta a incidentes."
+        },
+        {
+          name: "Falhas em software desatualizado",
+          category: "Sistemas",
+          risk: "alto",
+          operation: "Vulnerabilidades conhecidas em programas sem atualização podem ser abusadas para afetar sua segurança.",
+          danger: "O impacto varia de exposição de dados a interrupção de serviços, conforme o sistema e as proteções.",
+          prevention: "Ative atualizações automáticas, remova programas sem suporte e peça avaliação da equipe de TI."
+        },
+        {
+          name: "Vazamento de dados e fraude de identidade",
+          category: "Privacidade",
+          risk: "alto",
+          operation: "Dados pessoais expostos ou obtidos por fraude podem ser usados para tentativas de golpe ou impersonação.",
+          danger: "Pode haver abertura indevida de contas, abordagens fraudulentas e danos à privacidade.",
+          prevention: "Compartilhe o mínimo necessário, monitore notificações oficiais e conteste atividades que não reconhece."
+        },
+        {
+          name: "Fraude com voz ou imagem sintética",
+          category: "Engenharia social",
+          risk: "alto",
+          operation: "Conteúdo sintético pode imitar uma pessoa conhecida para tornar um pedido urgente mais convincente.",
+          danger: "Pode induzir transferências, divulgação de informações ou decisões apressadas.",
+          prevention: "Confirme pedidos sensíveis por um canal independente e combine uma palavra de segurança com familiares."
+        },
+        {
+          name: "Negação de serviço",
+          category: "Disponibilidade",
+          risk: "medio",
+          operation: "Um serviço recebe tráfego excessivo ou inesperado e pode ficar lento ou indisponível.",
+          danger: "Usuários e empresas podem perder acesso temporariamente a sistemas e serviços.",
+          prevention: "Organizações podem usar proteção de disponibilidade, monitoramento e um plano de continuidade."
+        },
+        {
+          name: "Exposição de informações públicas",
+          category: "Privacidade",
+          risk: "baixo",
+          operation: "Detalhes publicados abertamente podem ser reunidos e usados para tornar uma abordagem fraudulenta mais convincente.",
+          danger: "Pode aumentar a exposição a spam, tentativas de fraude ou engenharia social direcionada.",
+          prevention: "Revise o que publica, limite informações pessoais desnecessárias e ajuste as opções de privacidade."
+        }
+      ];
+      const completedScenarios = new Set();
+      const answeredScenarios = new Map();
+      const phoneDemoSteps = [
+        "Ambiente demonstrativo local iniciado.",
+        "Alerta fictício analisado: mensagem inesperada pede um código.",
+        "Permissões e dados do aparelho não foram solicitados.",
+        "Recomendação: não compartilhe códigos; confira pelo canal oficial."
+      ];
+      let phoneDemoIndex = -1;
+      let phoneDemoRunning = false;
+      let activeScenarioIndex = 0;
+      let activeStageIndex = 0;
+      let secretAlternatives = makeSecretAlternatives();
+      let secret = secretAlternatives[Math.floor(Math.random() * secretAlternatives.length)];
+      let guesses = [];
+      let ended = false;
+      let hintUsed = false;
+      let aiActive = false;
+      let aiUsed = false;
+      let aiRunId = 0;
+      let toastTimer;
+
+      function getStage() {
+        return stages[activeStageIndex];
+      }
+
+      function makeSecret() {
+        const digits = Array.from({ length: 10 }, (_, index) => String(index));
+        for (let index = digits.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(Math.random() * (index + 1));
+          [digits[index], digits[swapIndex]] = [digits[swapIndex], digits[index]];
+        }
+        return digits.slice(0, getStage().digits).join("");
+      }
+
+      function makeSecretAlternatives() {
+        const alternatives = new Set();
+        while (alternatives.size < getStage().alternatives) alternatives.add(makeSecret());
+        return [...alternatives];
+      }
+
+      function startNewGame() {
+        aiRunId += 1;
+        secretAlternatives = makeSecretAlternatives();
+        secret = secretAlternatives[Math.floor(Math.random() * secretAlternatives.length)];
+        guesses = [];
+        ended = false;
+        aiActive = false;
+        aiUsed = false;
+        hintUsed = false;
+        input.value = "";
+        hintButton.disabled = false;
+        hintCopy.innerHTML = "Pense primeiro na <strong>posição</strong> de cada dígito. Elimine combinações com base no retorno de cada tentativa.";
+        setHelp(`${getStage().digits} números diferentes de 0 a 9.`);
+        renderGuesses();
+      }
+
+      function readStats() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+          return {
+            played: Number.isFinite(saved.played) ? saved.played : 0,
+            won: Number.isFinite(saved.won) ? saved.won : 0,
+            points: Number.isFinite(saved.points) ? saved.points : 0,
+            best: Number.isFinite(saved.best) ? saved.best : null
+          };
+        } catch (error) {
+          console.error("Não foi possível ler o progresso salvo.", error);
+          return { played: 0, won: 0, points: 0, best: null };
+        }
+      }
+
+      function saveResult(won) {
+        const stats = readStats();
+        stats.played += 1;
+        if (won) {
+          stats.won += 1;
+          stats.points += Math.max(10, (getStage().attempts - guesses.length + 1) * 10);
+          stats.best = stats.best === null ? guesses.length : Math.min(stats.best, guesses.length);
+        }
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+        } catch (error) {
+          console.error("Não foi possível salvar o progresso.", error);
+        }
+        renderStats(stats);
+      }
+
+      function renderStats(stats = readStats()) {
+        document.querySelector("#games-won").textContent = String(stats.won);
+        document.querySelector("#best-score").textContent = stats.best === null ? "—" : `${stats.best} tent.`;
+        document.querySelector("#total-points").textContent = String(stats.points);
+        document.querySelector("#win-rate").textContent = `${stats.played ? Math.round(stats.won / stats.played * 100) : 0}%`;
+      }
+
+      function setHelp(message, state = "") {
+        help.textContent = message;
+        help.className = `input-help${state ? ` ${state}` : ""}`;
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("visible");
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => toast.classList.remove("visible"), 2600);
+      }
+
+      function renderGuesses() {
+        const stage = getStage();
+        guessCount.textContent = `${guesses.length} / ${aiUsed ? "∞" : stage.attempts}`;
+        const progress = Math.min(100, Math.round(guesses.length / stage.attempts * 100));
+        progressFill.style.width = `${progress}%`;
+        progressLabel.textContent = `${progress}%`;
+        progressBar.setAttribute("aria-valuemax", String(stage.attempts));
+        progressBar.setAttribute("aria-valuenow", String(Math.min(guesses.length, stage.attempts)));
+        progressCopy.textContent = ended ? "Partida encerrada" : aiActive ? "A IA continua até encontrar a senha" : `${stage.attempts - guesses.length} tentativas disponíveis`;
+        attemptNote.textContent = aiActive ? "IA analisando as pistas..." : aiUsed && ended ? `IA resolveu em ${guesses.length} tentativas` : ended ? "Partida encerrada" : `Até ${stage.attempts} tentativas`;
+        submitButton.disabled = ended || aiActive;
+        input.disabled = ended || aiActive;
+        aiButton.disabled = ended || aiActive;
+
+        if (!guesses.length) {
+          guessList.innerHTML = '<div class="guess-empty">Suas tentativas aparecerão aqui. Boa sorte!</div>';
+          return;
+        }
+
+        guessList.replaceChildren(...guesses.map((guess, index) => {
+          const row = document.createElement("div");
+          row.className = "guess-row";
+          const number = document.createElement("span");
+          number.className = "guess-number";
+          number.textContent = String(index + 1).padStart(2, "0");
+          const code = document.createElement("span");
+          code.className = "guess-code";
+          code.textContent = guess.code;
+          const feedback = document.createElement("span");
+          feedback.className = "guess-feedback";
+          const dots = document.createElement("span");
+          dots.className = "feedback-dots";
+          dots.setAttribute("aria-hidden", "true");
+          for (let dot = 0; dot < stage.digits; dot += 1) {
+            const marker = document.createElement("i");
+            if (dot < guess.exact) marker.className = "exact";
+            else if (dot < guess.exact + guess.misplaced) marker.className = "misplaced";
+            dots.append(marker);
+          }
+          const label = document.createElement("span");
+          label.textContent = `${guess.exact} certo${guess.exact === 1 ? "" : "s"} · ${guess.misplaced} fora`;
+          feedback.append(dots, label);
+          row.append(number, code, feedback);
+          return row;
+        }));
+      }
+
+      function validate(value) {
+        if (!new RegExp(`^\\d{${getStage().digits}}$`).test(value)) return `Digite exatamente ${getStage().digits} números.`;
+        if (new Set(value).size !== getStage().digits) return "Use números diferentes, sem repetição.";
+        return "";
+      }
+
+      function digitMask(code) {
+        let mask = 0;
+        for (const digit of code) mask |= 1 << Number(digit);
+        return mask;
+      }
+
+      function countDigits(mask) {
+        let count = 0;
+        while (mask) {
+          mask &= mask - 1;
+          count += 1;
+        }
+        return count;
+      }
+
+      function getFeedback(code, answer, codeMask = digitMask(code), answerMask = digitMask(answer)) {
+        let exact = 0;
+        for (let index = 0; index < code.length; index += 1) {
+          if (code[index] === answer[index]) exact += 1;
+        }
+        const misplaced = countDigits(codeMask & answerMask) - exact;
+        return { exact, misplaced };
+      }
+
+      function recordGuess(code) {
+        const { exact, misplaced } = getFeedback(code, secret);
+        guesses.push({ code, mask: digitMask(code), exact, misplaced });
+        setHelp(`${getStage().digits} números diferentes de 0 a 9.`);
+        if (exact === getStage().digits) {
+          ended = true;
+          aiActive = false;
+          saveResult(true);
+          setHelp(`Senha descoberta em ${guesses.length} tentativa${guesses.length === 1 ? "" : "s"}! Você ganhou ${Math.max(10, (getStage().attempts - guesses.length + 1) * 10)} pontos.`, "success");
+          showToast("Desafio resolvido! Mandou bem.");
+        } else if (!aiActive && guesses.length >= getStage().attempts) {
+          ended = true;
+          saveResult(false);
+          setHelp(`Fim das tentativas. A senha era ${secret}. Comece um novo desafio!`, "error");
+          showToast("Quase! Tente novamente em um novo desafio.");
+        }
+        renderGuesses();
+        return exact === getStage().digits;
+      }
+
+      function allPossibleCodes(length) {
+        if (codeCache.has(length)) return codeCache.get(length);
+        const codes = [];
+        function generate(prefix, usedDigits) {
+          if (prefix.length === length) {
+            codes.push({ code: prefix, mask: usedDigits });
+            return;
+          }
+          for (let digit = 0; digit <= 9; digit += 1) {
+            const bit = 1 << digit;
+            if (usedDigits & bit) continue;
+            generate(prefix + digit, usedDigits | bit);
+          }
+        }
+        generate("", 0);
+        codeCache.set(length, codes);
+        return codes;
+      }
+
+      function chooseAiGuess() {
+        const stage = getStage();
+        if (!guesses.length) return Array.from({ length: stage.digits }, (_, digit) => String(digit)).join("");
+        const possibilities = allPossibleCodes(stage.digits);
+        const candidates = possibilities.filter((candidate) =>
+          guesses.every((previous) => {
+            const feedback = getFeedback(previous.code, candidate.code, previous.mask, candidate.mask);
+            return feedback.exact === previous.exact && feedback.misplaced === previous.misplaced;
+          })
+        );
+        if (!candidates.length) {
+          throw new Error("As pistas não correspondem a uma sequência possível.");
+        }
+        if (candidates.length === 1) return candidates[0].code;
+
+        const probeSet = new Map();
+        const probeLimit = candidates.length > 400 ? 32 : Math.min(24, possibilities.length);
+        for (let index = 0; index < probeLimit; index += 1) {
+          const probe = possibilities[Math.floor(index * possibilities.length / probeLimit)];
+          probeSet.set(probe.code, probe);
+        }
+        const candidateLimit = candidates.length > 400 ? 32 : candidates.length;
+        for (let index = 0; index < candidateLimit; index += 1) {
+          const probe = candidates[Math.floor(index * candidates.length / candidateLimit)];
+          probeSet.set(probe.code, probe);
+        }
+        const candidateCodes = new Set(candidates.map((candidate) => candidate.code));
+        let bestGuess = candidates[0].code;
+        let smallestLargestGroup = candidates.length;
+        let bestGuessIsCandidate = true;
+        for (const [code, guess] of probeSet) {
+          const groups = new Uint32Array((stage.digits + 1) * (stage.digits + 1));
+          for (const candidate of candidates) {
+            const feedback = getFeedback(guess.code, candidate.code, guess.mask, candidate.mask);
+            const group = feedback.exact * (stage.digits + 1) + feedback.misplaced;
+            groups[group] += 1;
+          }
+          let largestGroup = 0;
+          for (const count of groups) largestGroup = Math.max(largestGroup, count);
+          const guessIsCandidate = candidateCodes.has(code);
+          if (largestGroup < smallestLargestGroup || (largestGroup === smallestLargestGroup && guessIsCandidate && !bestGuessIsCandidate)) {
+            smallestLargestGroup = largestGroup;
+            bestGuess = code;
+            bestGuessIsCandidate = guessIsCandidate;
+          }
+          if (smallestLargestGroup === 1) break;
+        }
+        return bestGuess;
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (ended || aiActive) return;
+        const guess = input.value.trim();
+        const error = validate(guess);
+        if (error) {
+          setHelp(error, "error");
+          input.focus();
+          return;
+        }
+        input.value = "";
+        recordGuess(guess);
+      });
+
+      aiButton.addEventListener("click", async () => {
+        if (ended || aiActive) return;
+        aiActive = true;
+        aiUsed = true;
+        const runId = ++aiRunId;
+        setHelp("A IA está analisando as pistas das tentativas...", "");
+        renderGuesses();
+        showToast("IA iniciada: ela só usa o retorno das tentativas.");
+
+        try {
+          while (aiActive && !ended && runId === aiRunId) {
+            await new Promise((resolve) => window.setTimeout(resolve, 350));
+            if (!aiActive || ended || runId !== aiRunId) return;
+            const guess = chooseAiGuess();
+            if (recordGuess(guess)) {
+              showToast(`IA encontrou a sequência em ${guesses.length} tentativas!`);
+            } else {
+              setHelp(`IA testou ${guess} e está usando as pistas para escolher a próxima sequência.`, "");
+            }
+          }
+        } catch (error) {
+          console.error("A IA não conseguiu continuar o desafio.", error);
+          aiActive = false;
+          renderGuesses();
+          setHelp("A IA encontrou um problema ao analisar as pistas. Tente iniciar um novo desafio.", "error");
+          showToast("Não foi possível continuar o desafio.");
+        }
+      });
+
+      input.addEventListener("input", () => {
+        input.value = input.value.replace(/\D/g, "").slice(0, getStage().digits);
+        if (help.classList.contains("error")) setHelp(`${getStage().digits} números diferentes de 0 a 9.`);
+      });
+
+      document.querySelector("#new-game-button").addEventListener("click", () => {
+        startNewGame();
+        input.focus();
+        showToast("Um novo desafio está pronto.");
+      });
+
+      function renderStage() {
+        const stage = getStage();
+        document.querySelectorAll(".stage-option").forEach((button, index) => {
+          button.classList.toggle("active", index === activeStageIndex);
+          button.setAttribute("aria-pressed", String(index === activeStageIndex));
+        });
+        levelPill.textContent = `FASE ${String(activeStageIndex + 1).padStart(2, "0")} / ${String(stages.length).padStart(2, "0")}`;
+        gameTitle.innerHTML = `FASE ${String(activeStageIndex + 1).padStart(2, "0")} <span aria-hidden="true">·</span> ${stage.name.toUpperCase()}`;
+        missionCopy.innerHTML = `Descubra a senha de <strong>${stage.digits} dígitos diferentes</strong>. Após cada tentativa, veja quantos estão no lugar certo e quantos aparecem em outra posição.`;
+        alternativesCopy.textContent = `${stage.alternatives} senhas alternativas possíveis; uma é sorteada para cada partida.`;
+        difficultyLabel.textContent = stage.difficulty;
+        difficultyDots.replaceChildren(...Array.from({ length: 3 }, (_, index) => {
+          const dot = document.createElement("i");
+          if (index >= activeStageIndex + 1) dot.style.background = "#43453d";
+          return dot;
+        }));
+        input.maxLength = stage.digits;
+        input.placeholder = "•".repeat(stage.digits);
+        input.setAttribute("aria-label", `Digite uma sequência de ${stage.digits} dígitos diferentes`);
+        document.querySelector(".code-label").textContent = `Sua tentativa · ${stage.digits} dígitos`;
+        hintCopy.innerHTML = "Pense primeiro na <strong>posição</strong> de cada dígito. Elimine combinações com base no retorno de cada tentativa.";
+        hintButton.disabled = false;
+        renderGuesses();
+      }
+
+      document.querySelectorAll(".stage-option").forEach((button) => {
+        button.addEventListener("click", () => {
+          const nextStage = Number(button.dataset.stage);
+          if (!Number.isInteger(nextStage) || nextStage < 0 || nextStage >= stages.length || nextStage === activeStageIndex) return;
+          activeStageIndex = nextStage;
+          startNewGame();
+          renderStage();
+          showToast(`Fase ${activeStageIndex + 1}: ${getStage().name}. Novo desafio iniciado.`);
+        });
+      });
+
+      hintButton.addEventListener("click", () => {
+        if (hintUsed || ended) return;
+        hintUsed = true;
+        hintButton.disabled = true;
+        const first = secret[0];
+        const last = secret[getStage().digits - 1];
+        hintCopy.textContent = `O primeiro dígito é ${first}. O último é ${last}. Os ${getStage().digits} números são diferentes.`;
+      });
+
+      function renderNavigation() {
+        const route = window.location.hash || "#jogar";
+        const routeTitles = {
+          "#jogar": "Jogar",
+          "#progresso": "Meu progresso",
+          "#como-jogar": "Como jogar",
+          "#online": "Partida online",
+          "#conta": "Login",
+          "#analisar-link": "Analisar link",
+          "#seguranca-digital": "Segurança digital",
+          "#catalogo-ameacas": "Catálogo de ameaças"
+        };
+        const views = new Map([
+          ["#jogar", gameView],
+          ["#progresso", progressView],
+          ["#como-jogar", guideView],
+          ["#online", document.querySelector("#online-view")],
+          ["#conta", document.querySelector("#auth-view")],
+          ["#analisar-link", linkView],
+          ["#seguranca-digital", securityView],
+          ["#catalogo-ameacas", threatView]
+        ]);
+        for (const [path, view] of views) view.hidden = path !== route;
+        levelPill.hidden = route !== "#jogar";
+        breadcrumbTitle.textContent = routeTitles[route] || "Jogar";
+        document.querySelectorAll(".nav-link").forEach((link) => {
+          const selected = link.getAttribute("href") === route;
+          link.classList.toggle("active", selected);
+          if (selected) link.setAttribute("aria-current", "page");
+          else link.removeAttribute("aria-current");
+        });
+      }
+
+      function renderThreatCatalog() {
+        const query = threatSearch.value.trim().toLocaleLowerCase("pt-BR");
+        const risk = threatFilter.value;
+        const matches = threatCatalog.filter((threat) => {
+          const matchesRisk = risk === "todos" || threat.risk === risk;
+          const searchable = `${threat.name} ${threat.category} ${threat.operation} ${threat.danger} ${threat.prevention}`.toLocaleLowerCase("pt-BR");
+          return matchesRisk && searchable.includes(query);
+        });
+
+        threatCount.textContent = `${matches.length} de ${threatCatalog.length} ameaças`;
+        if (!matches.length) {
+          const empty = document.createElement("p");
+          empty.className = "threat-empty";
+          empty.textContent = "Nenhuma ameaça encontrada com esses filtros.";
+          threatGrid.replaceChildren(empty);
+          return;
+        }
+
+        threatGrid.replaceChildren(...matches.map((threat) => {
+          const card = document.createElement("article");
+          card.className = "threat-card";
+          const header = document.createElement("div");
+          header.className = "threat-card-header";
+          const titleGroup = document.createElement("div");
+          const category = document.createElement("div");
+          category.className = "threat-category";
+          category.textContent = threat.category;
+          const title = document.createElement("h3");
+          title.textContent = threat.name;
+          titleGroup.append(category, title);
+          const riskBadge = document.createElement("span");
+          riskBadge.className = `risk-badge${threat.risk === "medio" ? " medium" : threat.risk === "baixo" ? " low" : ""}`;
+          riskBadge.textContent = `RISCO ${threat.risk.toUpperCase()}`;
+          header.append(titleGroup, riskBadge);
+
+          const details = [
+            ["Como atua", threat.operation],
+            ["Possível perigo", threat.danger],
+            ["Como se proteger", threat.prevention]
+          ].map(([label, description]) => {
+            const paragraph = document.createElement("p");
+            paragraph.className = "threat-detail";
+            const strong = document.createElement("strong");
+            strong.textContent = `${label}: `;
+            paragraph.append(strong, document.createTextNode(description));
+            return paragraph;
+          });
+          card.append(header, ...details);
+          return card;
+        }));
+      }
+
+      function renderSecurityScenario() {
+        const scenario = securityScenarios[activeScenarioIndex];
+        scenarioNav.replaceChildren(...securityScenarios.map((item, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `scenario-tab${index === activeScenarioIndex ? " active" : ""}`;
+          button.setAttribute("aria-pressed", String(index === activeScenarioIndex));
+          button.textContent = `${completedScenarios.has(index) ? "✓ " : ""}${item.title}`;
+          button.addEventListener("click", () => {
+            activeScenarioIndex = index;
+            renderSecurityScenario();
+          });
+          return button;
+        }));
+
+        const kicker = document.createElement("div");
+        kicker.className = "scenario-kicker";
+        kicker.textContent = scenario.kicker;
+        const title = document.createElement("h3");
+        title.textContent = scenario.title;
+        const prompt = document.createElement("p");
+        prompt.className = "scenario-prompt";
+        prompt.textContent = scenario.prompt;
+        const options = document.createElement("div");
+        options.className = "scenario-options";
+
+        scenario.options.forEach((option, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "scenario-option";
+          button.textContent = option;
+          button.disabled = answeredScenarios.has(activeScenarioIndex);
+          if (answeredScenarios.get(activeScenarioIndex) === index) {
+            button.classList.add(index === scenario.answer ? "correct" : "incorrect");
+          }
+          if (answeredScenarios.has(activeScenarioIndex) && index === scenario.answer) {
+            button.classList.add("correct");
+          }
+          button.addEventListener("click", () => {
+            if (answeredScenarios.has(activeScenarioIndex)) return;
+            answeredScenarios.set(activeScenarioIndex, index);
+            if (index === scenario.answer) completedScenarios.add(activeScenarioIndex);
+            renderSecurityScenario();
+          });
+          options.append(button);
+        });
+
+        const footer = document.createElement("div");
+        footer.className = "scenario-footer";
+        const score = document.createElement("span");
+        score.className = "scenario-score";
+        score.textContent = `${completedScenarios.size} / ${securityScenarios.length} cenários seguros`;
+        if (answeredScenarios.has(activeScenarioIndex) && answeredScenarios.get(activeScenarioIndex) !== scenario.answer) {
+          const retry = document.createElement("button");
+          retry.type = "button";
+          retry.className = "text-button";
+          retry.textContent = "Tentar de novo";
+          retry.addEventListener("click", () => {
+            answeredScenarios.delete(activeScenarioIndex);
+            renderSecurityScenario();
+          });
+          footer.append(score, retry);
+        } else {
+          footer.append(score);
+        }
+        const next = document.createElement("button");
+        next.type = "button";
+        next.className = "scenario-next";
+        next.textContent = activeScenarioIndex === securityScenarios.length - 1 ? "Voltar ao primeiro cenário" : "Próximo cenário →";
+        next.addEventListener("click", () => {
+          activeScenarioIndex = (activeScenarioIndex + 1) % securityScenarios.length;
+          renderSecurityScenario();
+        });
+        footer.append(next);
+
+        scenarioCard.replaceChildren(kicker, title, prompt, options);
+        if (answeredScenarios.has(activeScenarioIndex)) {
+          const feedback = document.createElement("p");
+          feedback.className = "scenario-feedback";
+          feedback.setAttribute("role", "status");
+          feedback.textContent = `${answeredScenarios.get(activeScenarioIndex) === scenario.answer ? "Resposta segura. " : "Essa escolha pode colocar seus dados em risco. "} ${scenario.explanation}`;
+          scenarioCard.append(feedback);
+        }
+        scenarioCard.append(footer);
+      }
+
+      function renderPhoneDemo() {
+        phoneScreenSteps.replaceChildren(...phoneDemoSteps.map((step, index) => {
+          const item = document.createElement("li");
+          item.textContent = step;
+          if (index < phoneDemoIndex) item.className = "done";
+          else if (index === phoneDemoIndex && phoneDemoRunning) item.className = "current";
+          return item;
+        }));
+        phoneDemoLog.replaceChildren(...phoneDemoSteps.slice(0, Math.max(0, phoneDemoIndex + 1)).map((step, index) => {
+          const item = document.createElement("li");
+          item.textContent = step;
+          if (index < phoneDemoIndex) item.className = "done";
+          else if (phoneDemoRunning) item.className = "current";
+          return item;
+        }));
+        phoneDemoButton.disabled = phoneDemoRunning;
+        phoneDemoButton.textContent = phoneDemoRunning
+          ? "Simulação em andamento…"
+          : phoneDemoIndex >= phoneDemoSteps.length
+            ? "Executar novamente"
+            : "Iniciar simulação";
+      }
+
+      phoneDemoButton.addEventListener("click", async () => {
+        if (phoneDemoRunning) return;
+        phoneDemoRunning = true;
+        phoneDemoIndex = 0;
+        phoneDemoStatus.textContent = "Executando demonstração local; nenhum dispositivo está conectado.";
+        renderPhoneDemo();
+
+        try {
+          while (phoneDemoIndex < phoneDemoSteps.length) {
+            await new Promise((resolve) => window.setTimeout(resolve, 700));
+            phoneDemoIndex += 1;
+            renderPhoneDemo();
+          }
+          phoneDemoRunning = false;
+          phoneDemoStatus.textContent = "Simulação concluída. Nenhum telefone ou conta foi acessado.";
+          renderPhoneDemo();
+        } catch (error) {
+          phoneDemoRunning = false;
+          console.error("Não foi possível concluir a simulação local.", error);
+          phoneDemoStatus.textContent = "A simulação foi interrompida. Você pode executá-la novamente.";
+          renderPhoneDemo();
+        }
+      });
+
+      document.querySelectorAll(".nav-link").forEach((link) => {
+        link.addEventListener("click", () => window.setTimeout(renderNavigation, 0));
+      });
+      window.addEventListener("hashchange", renderNavigation);
+      renderSecurityScenario();
+      renderPhoneDemo();
+      threatSearch.addEventListener("input", renderThreatCatalog);
+      threatFilter.addEventListener("change", renderThreatCatalog);
+      renderThreatCatalog();
+
+      linkForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const rawAddress = linkInput.value.trim();
+        if (!rawAddress) {
+          linkHelp.textContent = "Digite um endereço para analisar.";
+          linkHelp.className = "link-help error";
+          linkResult.hidden = true;
+          return;
+        }
+
+        let parsedUrl;
+        try {
+          parsedUrl = new URL(/^[a-z][a-z\d+.-]*:/i.test(rawAddress) ? rawAddress : `https://${rawAddress}`);
+        } catch (error) {
+          if (!(error instanceof TypeError)) throw error;
+          linkHelp.textContent = "Esse endereço não parece válido. Confira e tente novamente.";
+          linkHelp.className = "link-help error";
+          linkResult.hidden = true;
+          return;
+        }
+
+        if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+          linkHelp.textContent = "Por segurança, só analisamos endereços HTTP ou HTTPS.";
+          linkHelp.className = "link-help error";
+          linkResult.hidden = true;
+          return;
+        }
+        if (parsedUrl.username || parsedUrl.password) {
+          linkHelp.textContent = "O endereço contém credenciais embutidas. Remova-as antes de continuar.";
+          linkHelp.className = "link-help error";
+          linkResult.hidden = true;
+          return;
+        }
+
+        const host = parsedUrl.hostname.toLowerCase();
+        const signals = [];
+        if (parsedUrl.protocol !== "https:") signals.push("O endereço usa HTTP sem criptografia; evite enviar informações nele.");
+        if (host.startsWith("xn--") || host.includes(".xn--")) signals.push("O domínio contém caracteres internacionais codificados; confira se não imita outro nome.");
+        if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(host) || host.startsWith("[")) signals.push("O endereço usa um IP diretamente em vez de um domínio conhecido.");
+        if (["bit.ly", "tinyurl.com", "t.co", "shorturl.at", "is.gd", "cutt.ly"].includes(host)) signals.push("Este é um encurtador de links; o destino final não pode ser confirmado sem abrir o endereço.");
+        if (parsedUrl.port && !["80", "443"].includes(parsedUrl.port)) signals.push(`O endereço usa uma porta incomum (${parsedUrl.port}).`);
+        if (!signals.length) signals.push("Nenhum dos sinais básicos verificados foi encontrado. Isso não garante que o site seja confiável.");
+
+        linkHelp.textContent = "Análise concluída localmente; nenhum acesso ao endereço foi feito.";
+        linkHelp.className = "link-help";
+        linkResult.replaceChildren();
+        const resultTitle = document.createElement("h3");
+        resultTitle.textContent = signals.some((signal) => signal.startsWith("Nenhum")) ? "Sinais básicos" : "Pontos para conferir";
+        const normalizedAddress = document.createElement("code");
+        normalizedAddress.textContent = parsedUrl.href;
+        const signalList = document.createElement("ul");
+        signalList.className = "risk-list";
+        signals.forEach((signal) => {
+          const item = document.createElement("li");
+          item.textContent = signal;
+          if (signal.startsWith("Nenhum")) item.classList.add("ok");
+          signalList.append(item);
+        });
+        linkResult.append(resultTitle, normalizedAddress, signalList);
+        linkResult.hidden = false;
+      });
+
+      renderStats();
+      renderStage();
+      renderGuesses();
+      renderNavigation();
+    })();
+  </script>
+  <script type="module">
+    const FIREBASE_CONFIG = {
+      apiKey: "BGPK2JFwD8qASVVjmEBuj0718uh4nMU42-M0tog3XKyXmnDv17_kl9mmeEjG30BcRvXRQCYDsq9y0h_zSUDIXTw",
+      authDomain: "project-2133645727.firebaseapp.com",
+      projectId: "project-2133645727",
+      appId: ""
+    };
+    const FIREBASE_FUNCTIONS_REGION = "southamerica-east1";
+    const ROOM_STORAGE_KEY = "quebracode-firebase-room-id";
+
+    const authStatus = document.querySelector("#auth-status");
+    const authForms = document.querySelector("#auth-forms");
+    const authSession = document.querySelector("#auth-session");
+    const loginForm = document.querySelector("#login-form");
+    const signupForm = document.querySelector("#signup-form");
+    const loginTab = document.querySelector("#login-tab");
+    const signupTab = document.querySelector("#signup-tab");
+    const onlineStatus = document.querySelector("#online-status");
+    const activeRoom = document.querySelector("#active-room");
+    const roomStatusLabel = document.querySelector("#room-status-label");
+    const roomMembers = document.querySelector("#room-members");
+    const roomGuesses = document.querySelector("#room-guesses");
+    const roomCodeDisplay = document.querySelector("#room-code-display");
+    const startRoomButton = document.querySelector("#start-room");
+    const onlineGuessForm = document.querySelector("#online-guess-form");
+    const roomResult = document.querySelector("#room-result");
+    const roomLabels = {
+      waiting: "Aguardando o anfitrião iniciar.",
+      playing: "Partida em andamento — os palpites são compartilhados.",
+      won: "Partida concluída: sequência descoberta.",
+      lost: "Partida concluída: tentativas esgotadas."
+    };
+    let firebasePromise;
+    let firebaseServices;
+    let currentUser;
+    let currentRoomId = "";
+    let roomUnsubscribers = [];
+    let currentRoomSnapshot;
+    let authBusy = false;
+
+    function setStatus(element, message, state = "") {
+      element.textContent = message;
+      element.className = `${element === authStatus ? "auth-status" : "online-status"}${state ? ` ${state}` : ""}`;
+    }
+
+    function isSecurePage() {
+      return window.location.protocol === "https:" ||
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+    }
+
+    function isFirebaseConfigured() {
+      return Boolean(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain &&
+        FIREBASE_CONFIG.projectId && FIREBASE_CONFIG.appId);
+    }
+
+    async function getFirebase() {
+      if (!isFirebaseConfigured()) {
+        throw new Error("Firebase ainda não configurado. Adicione as credenciais públicas do seu projeto.");
+      }
+      if (!isSecurePage()) {
+        throw new Error("Login bloqueado nesta conexão HTTP. Publique o site em HTTPS para proteger sua conta.");
+      }
+      if (!firebasePromise) {
+        firebasePromise = Promise.all([
+          import("https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"),
+          import("https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"),
+          import("https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"),
+          import("https://www.gstatic.com/firebasejs/11.10.0/firebase-functions.js")
+        ]).then(([appSdk, authSdk, firestoreSdk, functionsSdk]) => {
+          const app = appSdk.getApps().length
+            ? appSdk.getApp()
+            : appSdk.initializeApp(FIREBASE_CONFIG);
+          const auth = authSdk.getAuth(app);
+          const db = firestoreSdk.getFirestore(app);
+          const functions = functionsSdk.getFunctions(app, FIREBASE_FUNCTIONS_REGION);
+          firebaseServices = { auth, db, firestoreSdk, functions, authSdk, functionsSdk };
+          authSdk.onAuthStateChanged(auth, (user) => {
+            window.setTimeout(() => handleSession(user), 0);
+          });
+          return firebaseServices;
+        }).catch((error) => {
+          firebasePromise = undefined;
+          throw error;
+        });
+      }
+      return firebasePromise;
+    }
+
+    async function callRoomFunction(name, data) {
+      const services = await getFirebase();
+      const callable = services.functionsSdk.httpsCallable(services.functions, name);
+      const response = await callable(data);
+      return response.data;
+    }
+
+    function renderAuthMode(mode) {
+      const signingUp = mode === "signup";
+      loginForm.hidden = signingUp;
+      signupForm.hidden = !signingUp;
+      loginTab.classList.toggle("active", !signingUp);
+      signupTab.classList.toggle("active", signingUp);
+      loginTab.setAttribute("aria-pressed", String(!signingUp));
+      signupTab.setAttribute("aria-pressed", String(signingUp));
+    }
+
+    function setBusy(busy) {
+      authBusy = busy;
+      for (const button of document.querySelectorAll(".auth-form button")) button.disabled = busy;
+    }
+
+    function clearRoomState() {
+      roomUnsubscribers.forEach((unsubscribe) => unsubscribe());
+      roomUnsubscribers = [];
+      currentRoomId = "";
+      currentRoomSnapshot = undefined;
+      activeRoom.hidden = true;
+      localStorage.removeItem(ROOM_STORAGE_KEY);
+      localStorage.removeItem("quebracode-room-id");
+    }
+
+    function handleSession(user) {
+      if (currentUser?.uid !== user?.uid) clearRoomState();
+      currentUser = user ?? undefined;
+      const email = currentUser?.email ?? "";
+      const displayName = String(currentUser?.displayName || email.split("@")[0] || "Jogador");
+      document.querySelector("#profile-name").textContent = currentUser ? displayName : "Visitante";
+      document.querySelector("#profile-level").textContent = currentUser ? "Conta autenticada" : "Entre para jogar online";
+
+      if (currentUser) {
+        authForms.hidden = true;
+        authSession.replaceChildren();
+        const description = document.createElement("p");
+        description.textContent = `Conta conectada: ${email}`;
+        const logout = document.createElement("button");
+        logout.type = "button";
+        logout.className = "auth-action";
+        logout.textContent = "Sair da conta";
+        logout.addEventListener("click", async () => {
+          try {
+            const { auth, authSdk } = await getFirebase();
+            await authSdk.signOut(auth);
+            clearRoomState();
+            setStatus(authStatus, "Você saiu da conta.", "success");
+          } catch (error) {
+            setStatus(authStatus, error.message || "Não foi possível sair da conta.", "error");
+          }
+        });
+        authSession.append(description, logout);
+        authSession.hidden = false;
+        setStatus(authStatus, "Conta Firebase autenticada. Agora você pode criar ou entrar em uma sala online.", "success");
+        setStatus(onlineStatus, "Conta conectada. Crie uma sala ou entre usando um código.");
+        restoreRoom();
+      } else {
+        authForms.hidden = false;
+        authSession.hidden = true;
+        setStatus(authStatus, isFirebaseConfigured()
+          ? isSecurePage() ? "Entre ou crie uma conta Firebase para jogar online." : "Login bloqueado: hospede a plataforma em HTTPS antes de usar credenciais."
+          : "Configure as credenciais do Firebase em FIREBASE_CONFIG para habilitar contas.");
+        setStatus(onlineStatus, isFirebaseConfigured()
+          ? isSecurePage() ? "Entre na aba Login para autenticar sua conta." : "Login exige hospedagem HTTPS. A conexão atual não é segura."
+          : "Configure o Firebase e publique as Cloud Functions para habilitar salas online.");
+      }
+    }
+
+    async function initializeAuth() {
+      renderAuthMode("login");
+      handleSession(undefined);
+      if (!isFirebaseConfigured()) {
+        return;
+      }
+      if (!isSecurePage()) return;
+      try {
+        await getFirebase();
+      } catch (error) {
+        setStatus(authStatus, error.message || "Não foi possível inicializar o login.", "error");
+      }
+    }
+
+    loginTab.addEventListener("click", () => renderAuthMode("login"));
+    signupTab.addEventListener("click", () => renderAuthMode("signup"));
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (authBusy || !loginForm.reportValidity()) return;
+      setBusy(true);
+      try {
+        const { auth, authSdk } = await getFirebase();
+        await authSdk.signInWithEmailAndPassword(
+          auth,
+          document.querySelector("#login-email").value.trim(),
+          document.querySelector("#login-password").value
+        );
+        loginForm.reset();
+        setStatus(authStatus, "Login realizado.", "success");
+      } catch (error) {
+        setStatus(authStatus, error.message || "Não foi possível entrar na conta.", "error");
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    signupForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (authBusy || !signupForm.reportValidity()) return;
+      setBusy(true);
+      try {
+        const { auth, authSdk } = await getFirebase();
+        const credential = await authSdk.createUserWithEmailAndPassword(
+          auth,
+          document.querySelector("#signup-email").value.trim(),
+          document.querySelector("#signup-password").value
+        );
+        await authSdk.updateProfile(credential.user, {
+          displayName: document.querySelector("#signup-name").value.trim()
+        });
+        await authSdk.sendEmailVerification(credential.user);
+        handleSession(credential.user);
+        signupForm.reset();
+        setStatus(authStatus, "Conta criada e conectada. Confira sua caixa de entrada para confirmar o e-mail.", "success");
+      } catch (error) {
+        setStatus(authStatus, error.message || "Não foi possível criar a conta.", "error");
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    function setOnlineBusy(busy) {
+      for (const button of document.querySelectorAll("#create-room-form button, #join-room-form button, #online-guess-form button")) {
+        button.disabled = busy;
+      }
+    }
+
+    function getFriendlyError(error) {
+      const message = String(error?.message || "");
+      if (/Failed to fetch|NetworkError|fetch/i.test(message)) {
+        return "Não foi possível conectar ao Firebase. Confira as credenciais, a implantação e a conexão.";
+      }
+      return message || "A operação online não pôde ser concluída.";
+    }
+
+    function renderRoom(snapshot) {
+      currentRoomSnapshot = snapshot;
+      const room = snapshot.room;
+      activeRoom.hidden = false;
+      roomCodeDisplay.textContent = room.join_code;
+      roomStatusLabel.textContent = roomLabels[room.status] || "Status da sala desconhecido.";
+      document.querySelector("#start-room").hidden = room.createdBy !== currentUser?.uid || room.status !== "waiting";
+      document.querySelector("#start-room").disabled = snapshot.members.length < 2;
+      document.querySelector("#start-room").title = snapshot.members.length < 2 ? "Aguarde pelo menos outro jogador." : "";
+      document.querySelector("#online-guess-form").hidden = room.status !== "playing";
+      document.querySelector("#online-guess").disabled = room.status !== "playing";
+      roomMembers.replaceChildren(...snapshot.members.map((member) => {
+        const item = document.createElement("li");
+        item.textContent = `${member.nickname}${member.userId === currentUser?.uid ? " (você)" : ""}`;
+        return item;
+      }));
+      roomGuesses.replaceChildren(...snapshot.guesses.map((guess) => {
+        const item = document.createElement("li");
+        const code = document.createElement("code");
+        code.textContent = guess.guess_code;
+        item.append(`#${guess.guess_number} · ${guess.nickname} · `, code,
+          ` — ${guess.exact_count} no lugar certo, ${guess.misplaced_count} em outra posição`);
+        return item;
+      }));
+      roomResult.hidden = !room.revealedCode;
+      roomResult.textContent = room.revealedCode
+        ? `Senha revelada após o fim da partida: ${room.revealedCode}`
+        : "";
+      setStatus(onlineStatus, `Sala ${room.join_code} · ${snapshot.members.length} jogador(es) · atualização em tempo real.`);
+    }
+
+    async function joinRoomByCode(code, nickname) {
+      const result = await callRoomFunction("joinOnlineRoom", {
+        joinCode: code.trim().toUpperCase(),
+        nickname: nickname.trim()
+      });
+      await attachToRoom(result.roomId);
+    }
+
+    function attachToRoom(roomId) {
+      clearRoomState();
+      currentRoomId = roomId;
+      localStorage.setItem(ROOM_STORAGE_KEY, roomId);
+      const { db, firestoreSdk } = firebaseServices;
+      const roomRef = firestoreSdk.doc(db, "rooms", roomId);
+      let roomData;
+      let members = [];
+      let guesses = [];
+      const renderLatest = () => {
+        if (currentRoomId === roomId && roomData) renderRoom({ room: roomData, members, guesses });
+      };
+      const onError = (error) => setStatus(onlineStatus, getFriendlyError(error), "error");
+      roomUnsubscribers = [
+        firestoreSdk.onSnapshot(roomRef, (snapshot) => {
+          if (!snapshot.exists()) {
+            clearRoomState();
+            setStatus(onlineStatus, "Esta sala não existe mais.", "error");
+            return;
+          }
+          roomData = snapshot.data();
+          renderLatest();
+        }, onError),
+        firestoreSdk.onSnapshot(
+          firestoreSdk.collection(roomRef, "members"),
+          (snapshot) => {
+            members = snapshot.docs.map((item) => item.data());
+            renderLatest();
+          },
+          onError
+        ),
+        firestoreSdk.onSnapshot(
+          firestoreSdk.query(
+            firestoreSdk.collection(roomRef, "guesses"),
+            firestoreSdk.orderBy("guess_number")
+          ),
+          (snapshot) => {
+            guesses = snapshot.docs.map((item) => item.data());
+            renderLatest();
+          },
+          onError
+        )
+      ];
+    }
+
+    async function restoreRoom() {
+      const roomId = localStorage.getItem(ROOM_STORAGE_KEY);
+      if (!roomId || !currentUser || currentRoomId === roomId) return;
+      try {
+        await attachToRoom(roomId);
+      } catch (error) {
+        clearRoomState();
+        setStatus(onlineStatus, getFriendlyError(error));
+      }
+    }
+
+    document.querySelector("#create-room-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      if (!form.reportValidity()) return;
+      if (!currentUser) {
+        setStatus(onlineStatus, "Entre na aba Login antes de criar uma sala.", "error");
+        return;
+      }
+      setOnlineBusy(true);
+      try {
+        const result = await callRoomFunction("createOnlineRoom", {
+          nickname: document.querySelector("#room-nickname").value.trim()
+        });
+        form.reset();
+        attachToRoom(result.roomId);
+      } catch (error) {
+        setStatus(onlineStatus, getFriendlyError(error), "error");
+      } finally {
+        setOnlineBusy(false);
+      }
+    });
+
+    document.querySelector("#join-room-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      if (!form.reportValidity()) return;
+      if (!currentUser) {
+        setStatus(onlineStatus, "Entre na aba Login antes de entrar em uma sala.", "error");
+        return;
+      }
+      setOnlineBusy(true);
+      try {
+        await joinRoomByCode(
+          document.querySelector("#join-room-code").value,
+          document.querySelector("#join-nickname").value
+        );
+        form.reset();
+      } catch (error) {
+        setStatus(onlineStatus, getFriendlyError(error), "error");
+      } finally {
+        setOnlineBusy(false);
+      }
+    });
+
+    startRoomButton.addEventListener("click", async () => {
+      if (!currentRoomId) return;
+      startRoomButton.disabled = true;
+      try {
+        await callRoomFunction("startOnlineRoom", { roomId: currentRoomId });
+      } catch (error) {
+        setStatus(onlineStatus, getFriendlyError(error), "error");
+      } finally {
+        if (currentRoomSnapshot?.room?.status === "waiting") {
+          startRoomButton.disabled = currentRoomSnapshot.members.length < 2;
+        }
+      }
+    });
+
+    onlineGuessForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      if (!form.reportValidity() || !currentRoomId) return;
+      const guess = document.querySelector("#online-guess").value;
+      if (new Set(guess).size !== 4) {
+        setStatus(onlineStatus, "Use quatro dígitos diferentes.", "error");
+        return;
+      }
+      setOnlineBusy(true);
+      try {
+        await callRoomFunction("submitOnlineGuess", {
+          roomId: currentRoomId,
+          guess
+        });
+        document.querySelector("#online-guess").value = "";
+      } catch (error) {
+        setStatus(onlineStatus, getFriendlyError(error), "error");
+      } finally {
+        setOnlineBusy(false);
+      }
+    });
+
+    document.querySelector("#leave-room").addEventListener("click", () => {
+      clearRoomState();
+      setStatus(onlineStatus, "Você saiu da visualização da sala.");
+    });
+
+    document.querySelector("#copy-room-code").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(roomCodeDisplay.textContent);
+        setStatus(onlineStatus, "Código da sala copiado.");
+      } catch (error) {
+        console.error("Não foi possível copiar o código da sala.", error);
+        setStatus(onlineStatus, "Não foi possível copiar automaticamente. Selecione o código para copiá-lo.");
+      }
+    });
+
+    document.querySelector("#join-room-code").addEventListener("input", (event) => {
+      event.currentTarget.value = event.currentTarget.value.replace(/[^a-f\d]/gi, "").slice(0, 10).toUpperCase();
+    });
+
+    window.addEventListener("hashchange", () => {
+      if (window.location.hash === "#online" && currentUser) restoreRoom();
+    });
+
+    initializeAuth();
+  </script>
+</body>
+</html>
